@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<body><!--onLoad='init()'>-->
+<div id="canvasesdiv" style="position:relative; width:512px; height:512px">
+<canvas id="imCanvas" style="z-index: 1; position: absolute; left:0px; top:0px;" width="512" height="512">
+    This text is displayed if your browser does not support HTML5 Canvas.
+</canvas>
+<canvas id="mouseCanvas" style="z-index: 2; position: absolute; left:0px; top:0px;" width="512" height="512">
+    This text is displayed if your browser does not support HTML5 Canvas.
+</canvas>
+<canvas id="outputCanvas" style="z-index: 3; position: absolute; left:512px; top:0px;" width="512" height="512">
+    This text is displayed if your browser does not support HTML5 Canvas.
+</canvas>
+</div>
+<div id="paragraphDiv">
+<p id="BAve"></p>
+<p id="BLast"></p>
+<p id="BList"></p>
+</div>
+<script type="text/javascript" src="dropletCanvasHelpers.js"></script>
+<label>Fluorescent Image File:</label><br/>
+<input type="file" id="imageLoader" name="imageLoader"/>
+<label>Composite Image File:</label><br/>
+<input type="file" id="cimageLoader" name="cimageLoader"/>
+<button id="AppendData" name="AppendData" onclick="handleAppendData()">Append Data</button>
+<script type="text/javascript">
+var s=init();//s is the CanvasState object referring to the state of the interactive mouseCanvas.
+
+var imageLoader = document.getElementById('imageLoader');
+imageLoader.addEventListener('change', handleImage, false);
+var canvas = document.getElementById('imCanvas');
+var ctx = canvas.getContext('2d');
+var currentImageName='';
+
+function handleImage(e){
+    var reader = new FileReader();
+    reader.onload = function(event){
+        var img = new Image();
+        img.onload = function(){
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img,0,0);
+        }
+        img.src = event.target.result;
+    }
+    reader.readAsDataURL(e.target.files[0]);     
+    pFiles=document.getElementById('fileList');
+    currentImageName=e.target.files[0].name;
+    pFiles.appendChild(document.createTextNode(e.target.files[0].name+", "));
+    s.clear()
+    s.shapes=[];
+}
+
+var cimageLoader = document.getElementById('cimageLoader');
+cimageLoader.addEventListener('change', handlecImage, false);
+var ccanvas = document.getElementById('outputCanvas');
+var cctx = ccanvas.getContext('2d');
+function handlecImage(e){
+    var reader = new FileReader();
+    reader.onload = function(event){
+        var cimg = new Image();
+        cimg.onload = function(){
+            ccanvas.width = cimg.width;
+            ccanvas.height = cimg.height;
+            cctx.drawImage(cimg,0,0);
+            }
+        cimg.src = event.target.result;
+    }
+    reader.readAsDataURL(e.target.files[0]);     
+}
+
+function handleAppendData() {
+    var analyzedDataP=document.getElementById("analyzedDataP");
+    var c1=document.createElement('canvas');
+    var c2=document.createElement('canvas');
+    //c1.style="z-index: 1; position:absolute; left 0px;";
+    //c2.style="z-index: 2; position: absolute; left:0px;";
+    c1.id="latestImage";
+    c2.id="lastetMarks"
+    c1.width=512;
+    c1.height=512;
+    c2.width=512;
+    c2.height=512;
+    c1.style="z-index: 1;";
+    c2.style="z-index: 2;";
+    //c2.style.position=c1.style.postion;
+    var canvas = document.getElementById('imCanvas');
+    var mousecanvas = document.getElementById('mouseCanvas');
+    var ctx1=c1.getContext('2d');
+    var ctx2=c2.getContext('2d');
+    ctx1.drawImage(canvas,0,0);
+    ctx2.drawImage(mousecanvas,0,0)
+    analyzedDataP=document.createElement('p');
+    analyzedDataP.appendChild(document.createTextNode("Filename: "+currentImageName));
+    analyzedDataP.appendChild(document.createElement("br"));
+    analyzedDataP.appendChild(document.createTextNode("Coords: "));
+    var coords=returnShapeCoords(s);
+    for (var i=0;i<coords.length;i++) {
+       analyzedDataP.appendChild(document.createTextNode('('+coords[i][0]+', '+coords[i][1]+'), ')); 
+    }
+    analyzedDataP.appendChild(document.createElement("br"));
+    var analyzedDataDiv=document.getElementById("analyzedData")
+    c1.style.zIndex=1;
+    c1.style.position="absolute";
+    //c1.style.width="512px";
+    //c1.style.height="512px";
+    c2.style.zIndex=2;
+    c2.style.position="relative";
+    analyzedDataDiv.appendChild(c1);
+    analyzedDataDiv.appendChild(c2); 
+    analyzedDataDiv.appendChild(analyzedDataP)
+    //analyzedDataP.appendChild(document.createElement("br"));
+}
+</script>
+<div id="fileHistory">
+<p id="fileList"></p>
+</div>
+<div id="analyzedData" style="position: absolute;">
+
+</div>
+</body>
